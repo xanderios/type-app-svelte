@@ -6,7 +6,7 @@
 	import wordsData from '../data/words';
 	import WordList from '../components/WordList.svelte';
 
-	const TIMER_SECONDS = 60;
+	const TIMER_SECONDS = 5;
 	const NUMBER_OF_WORDS = 200;
 
 	let fetchingWords = false;
@@ -22,7 +22,7 @@
 	let interval: any;
 	let game = {
 		start: false,
-		over: false
+		over: true
 	};
 
 	function getNewWords() {
@@ -106,6 +106,31 @@
 
 <section class="h-screen w-screen flex justify-center items-center">
 	<div class="flex flex-col items-center gap-4 px-4">
+		{#if game.over}
+			<p class="font-semibold text-2xl">Your results</p>
+			<div class="flex">
+				<div class="flex flex-col text-center">
+					<p class="text-4xl font-bold">{totalWords}</p>
+					<p class="font-semibold">Total Words</p>
+					<div class="text-left">
+						<p class="text-green-500">
+							<abbr class="no-underline" title="Words per minute">WPM</abbr>: {correctWords / 60}
+						</p>
+						<p>Correct words: {correctWords}</p>
+						<p>Incorrect words: {incorrectWords}</p>
+					</div>
+				</div>
+
+				<div class="flex flex-col text-center">
+					<p class="text-4xl font-bold">{keystrokes}</p>
+					<p class="font-semibold">Total Keystrokes</p>
+					<div class="text-left">
+						<p class="text-green-500">{correctWords}</p>
+						<p>{incorrectWords}</p>
+					</div>
+				</div>
+			</div>
+		{/if}
 		<div class="flex gap-2">
 			{#if game.over}
 				<button>Share</button>
