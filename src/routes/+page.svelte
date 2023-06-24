@@ -1,19 +1,24 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { twMerge } from 'tailwind-merge';
+
 	import './styles.css';
 
 	import wordsData from '../data/words';
+	import WordList from '../components/WordList.svelte';
+
+	const TIMER_SECONDS = 60;
+	const NUMBER_OF_WORDS = 200;
 
 	let fetchingWords = false;
 	let words: { value: string; hit: boolean | null; correct: boolean | null }[] = [];
 	let wordIndex = 0;
 	let highlightError = false;
 	let input = '';
+	let totalWords = 0;
 	let correctWords = 0;
 	let incorrectWords = 0;
 	let keystrokes = 0;
-	let timer = 60;
+	let timer = TIMER_SECONDS;
 	let interval: any;
 	let game = {
 		start: false,
@@ -24,7 +29,7 @@
 		fetchingWords = true;
 		setTimeout(() => {
 			let list = [];
-			for (let i = 0; i < 200; i++) {
+			for (let i = 0; i < NUMBER_OF_WORDS; i++) {
 				const random = Math.floor(Math.random() * wordsData.length - 1);
 				list.push(wordsData[random]);
 			}
@@ -37,8 +42,7 @@
 	}
 
 	function startGame() {
-		if (!game.start) game.start = true;
-		game = { ...game };
+		if (!game.start) game = { start: true, over: false };
 		interval = setInterval(() => {
 			if (timer <= 0) endGame();
 			--timer;
@@ -51,9 +55,8 @@
 
 	function endGame() {
 		clearInterval(interval);
-		game = { ...game, over: false };
+		game = { start: false, over: true };
 		input = '';
-		alert(JSON.stringify({ correctWords, incorrectWords, keystrokes }, null, 2));
 	}
 
 	function restartGame() {
@@ -61,7 +64,7 @@
 		endGame();
 
 		game = { start: false, over: false };
-		timer = 60;
+		timer = TIMER_SECONDS;
 		wordIndex = 0;
 	}
 
@@ -77,6 +80,7 @@
 		highlightError = input !== words[wordIndex].value.slice(0, input.length);
 
 		if (keystroke === ' ') {
+			totalWords++;
 			if (input.trim() === words[wordIndex].value) {
 				correctWords++;
 				words[wordIndex].correct = true;
@@ -101,47 +105,29 @@
 </svelte:head>
 
 <section class="h-screen w-screen flex justify-center items-center">
-	<div class="flex flex-col items-center gap-4">
+	<div class="flex flex-col items-center gap-4 px-4">
 		<div class="flex gap-2">
-			<p class="px-3 py-2 rounded border shadow text-center font-semibold">{timer}</p>
-			<input
-				placeholder={game.start ? '' : 'Start typing...'}
-				class="w-full max-w-md shadow font-semibold border rounded px-3 py-2"
-				type="text"
-				value={input}
-				on:input={handleInput}
-			/>
-		</div>
-		{#if fetchingWords}
-			loading...
-		{:else}
-			<div class="relative mt-4 font-semibold text-2xl max-w-3xl break-keep h-32 overflow-hidden">
-				<div class="flex flex-wrap">
-					{#each words as word, index}
-						<div
-							class={twMerge(
-								'px-2 h-10 flex items-center rounded transition-transform',
-								wordIndex === index && 'shadow-md -translate-y-1',
-								wordIndex === index && (highlightError ? 'bg-red-500' : 'bg-gray-200'),
-								words[index].correct
-									? 'text-green-500'
-									: words[index].correct != null && 'text-red-500'
-							)}
-						>
-							{word.value}
-						</div>
-					{/each}
-				</div>
-				<span
-					class="block absolute bottom-0 inset-x-0 h-16 bg-gradient-to-t from-white to-transparent"
+			{#if game.over}
+				<button>Share</button>
+				<button>Reset</button>
+			{:else}
+				<input
+					disabled={game.over}
+					placeholder={game.start ? '' : 'Start typing...'}
+					class="w-full max-w-md shadow font-semibold border rounded px-3 py-2"
+					type="text"
+					value={input}
+					on:input={handleInput}
 				/>
-			</div>
-		{/if}
+				<p class="px-3 py-2 rounded border shadow text-center font-semibold">{timer}</p>
+			{/if}
+		</div>
+		<div class="h-32">
+			{#if fetchingWords}
+				loading...
+			{:else}
+				<WordList {words} {wordIndex} {highlightError} />
+			{/if}
+		</div>
 	</div>
 </section>
-
-<style style="display: block" visibility>
-	.dale {
-		background: #bada55;
-	}
-</style>
