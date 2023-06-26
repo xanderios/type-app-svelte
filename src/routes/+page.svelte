@@ -5,8 +5,10 @@
 
 	import wordsData from '../data/words';
 	import WordList from '../components/WordList.svelte';
+	import Button from '../components/Button.svelte';
+	import Results from '../components/Results.svelte';
 
-	const TIMER_SECONDS = 5;
+	const TIMER_SECONDS = 60;
 	const NUMBER_OF_WORDS = 200;
 
 	let fetchingWords = false;
@@ -15,14 +17,16 @@
 	let highlightError = false;
 	let input = '';
 	let totalWords = 0;
-	let correctWords = 0;
-	let incorrectWords = 0;
+	let correctWords: string[] = [];
+	let wrongWords: string[] = [];
 	let keystrokes = 0;
+	let correctKeystrokes = 0;
+	let wrongKeystrokes = 0;
 	let timer = TIMER_SECONDS;
 	let interval: any;
 	let game = {
 		start: false,
-		over: true
+		over: false
 	};
 
 	function getNewWords() {
@@ -57,6 +61,7 @@
 		clearInterval(interval);
 		game = { start: false, over: true };
 		input = '';
+		highlightError = false;
 	}
 
 	function restartGame() {
@@ -66,26 +71,36 @@
 		game = { start: false, over: false };
 		timer = TIMER_SECONDS;
 		wordIndex = 0;
+		totalWords = 0;
+		correctWords = [];
+		wrongWords = [];
+		keystrokes = 0;
+		correctKeystrokes = 0;
+		wrongKeystrokes = 0;
 	}
 
 	function handleInput(event: any) {
 		if (!game.start) {
 			startGame();
 		}
-		keystrokes++;
 		const element = event.target as HTMLInputElement;
 		input = element.value;
 		const keystroke = event.data;
 
 		highlightError = input !== words[wordIndex].value.slice(0, input.length);
 
+		if (keystroke !== null && keystroke !== ' ') {
+			keystrokes++;
+			highlightError ? wrongKeystrokes++ : correctKeystrokes++;
+		}
+
 		if (keystroke === ' ') {
 			totalWords++;
 			if (input.trim() === words[wordIndex].value) {
-				correctWords++;
+				correctWords.push(words[wordIndex].value);
 				words[wordIndex].correct = true;
 			} else {
-				incorrectWords++;
+				wrongWords.push(words[wordIndex].value);
 				words[wordIndex].correct = false;
 			}
 			wordIndex++;
@@ -104,55 +119,74 @@
 	<meta name="description" content="Svelte app for typing practice" />
 </svelte:head>
 
-<section class="h-screen w-screen flex justify-center items-center">
-	<div class="flex flex-col items-center gap-4 px-4">
+<section class="h-screen w-screen flex justify-center items-center bg-gray-900 text-gray-300">
+	<div class="flex flex-col items-center px-4 font-medium">
 		{#if game.over}
-			<p class="font-semibold text-2xl">Your results</p>
-			<div class="flex">
-				<div class="flex flex-col text-center">
-					<p class="text-4xl font-bold">{totalWords}</p>
-					<p class="font-semibold">Total Words</p>
-					<div class="text-left">
-						<p class="text-green-500">
-							<abbr class="no-underline" title="Words per minute">WPM</abbr>: {correctWords / 60}
-						</p>
-						<p>Correct words: {correctWords}</p>
-						<p>Incorrect words: {incorrectWords}</p>
-					</div>
-				</div>
-
-				<div class="flex flex-col text-center">
-					<p class="text-4xl font-bold">{keystrokes}</p>
-					<p class="font-semibold">Total Keystrokes</p>
-					<div class="text-left">
-						<p class="text-green-500">{correctWords}</p>
-						<p>{incorrectWords}</p>
-					</div>
-				</div>
+			<p class="text-2xl">Your results</p>
+			<Results
+				results={{
+					header: {
+						title: 'Accuracy',
+						value: `${(
+							(((correctWords.length / totalWords) * 100 || 0) +
+								((correctKeystrokes / keystrokes) * 100 || 0)) /
+							2
+						).toFixed(2)}%`
+					},
+					results: [
+						{ title: 'Total Words', value: totalWords },
+						{
+							title: 'WPM',
+							value: (correctWords.length / (TIMER_SECONDS / 60)).toFixed(0),
+							bgClass: 'bg-gray-700/50'
+						},
+						{ title: 'Correct Words', value: correctWords.length },
+						{ title: 'Wrong Words', value: wrongWords.length },
+						{
+							title: 'Words accuracy',
+							value: `${((correctWords.length / totalWords) * 100 || 0).toFixed(2)}%`
+						},
+						{ title: 'Total keystrokes', value: keystrokes },
+						{
+							title: 'KPM',
+							value: (correctKeystrokes / (TIMER_SECONDS / 60)).toFixed(0),
+							bgClass: 'bg-gray-700/50'
+						},
+						{ title: 'Correct Keystrokes', value: correctKeystrokes },
+						{ title: 'Wrong Keystrokes', value: wrongKeystrokes },
+						{
+							title: 'Keystrokes accuracy',
+							value: `${((correctKeystrokes / keystrokes) * 100 || 0).toFixed(2)}%`
+						}
+					]
+				}}
+			/>
+			<div class="flex gap-4 mt-4">
+				<Button outline disabled>Share</Button>
+				<Button onClick={restartGame}>Reset</Button>
 			</div>
 		{/if}
-		<div class="flex gap-2">
-			{#if game.over}
-				<button>Share</button>
-				<button>Reset</button>
-			{:else}
+		{#if !game.over}
+			<div class="flex gap-2">
 				<input
 					disabled={game.over}
 					placeholder={game.start ? '' : 'Start typing...'}
-					class="w-full max-w-md shadow font-semibold border rounded px-3 py-2"
+					class="bg-gray-800 w-full max-w-md shadow font-semibold border border-transparent rounded-md px-3 py-2"
 					type="text"
 					value={input}
 					on:input={handleInput}
 				/>
-				<p class="px-3 py-2 rounded border shadow text-center font-semibold">{timer}</p>
-			{/if}
-		</div>
-		<div class="h-32">
-			{#if fetchingWords}
-				loading...
-			{:else}
-				<WordList {words} {wordIndex} {highlightError} />
-			{/if}
-		</div>
+				<Button className="pointer-events-none">{timer}</Button>
+			</div>
+		{/if}
+		{#if !game.over}
+			<div class="h-40 mt-4">
+				{#if fetchingWords}
+					loading...
+				{:else}
+					<WordList {words} {wordIndex} {highlightError} />
+				{/if}
+			</div>
+		{/if}
 	</div>
 </section>
