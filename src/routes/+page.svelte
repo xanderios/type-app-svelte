@@ -1,6 +1,4 @@
 <script lang="ts">
-	import { dev } from '$app/environment';
-	import { inject } from '@vercel/analytics';
 	import { onMount } from 'svelte';
 
 	import './styles.css';
@@ -9,8 +7,6 @@
 	import WordList from '../components/WordList.svelte';
 	import Button from '../components/Button.svelte';
 	import Results from '../components/Results.svelte';
-
-	inject({ mode: dev ? 'development' : 'production' });
 
 	const TIMER_SECONDS = 60;
 	const NUMBER_OF_WORDS = 200;
