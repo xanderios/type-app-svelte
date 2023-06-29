@@ -189,4 +189,15 @@
 			</div>
 		{/if}
 	</div>
+
+	<div class="flex justify-center items-center fixed bottom-0 inset-x-0 h-20 bg-gray-950">
+		<a
+			href="https://github.com/xanderios"
+			target="_blank"
+			class="flex justify-center items-center gap-2 md:text-xl text-white"
+		>
+			<img class="h-5" src="/icons/github.svg" alt="Github" />
+			<span>xanderios</span>
+		</a>
+	</div>
 </section>
