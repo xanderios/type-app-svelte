@@ -19,7 +19,7 @@
 
 <div
 	transition:fade
-	class="relative font-semibold text-2xl max-w-3xl break-keep h-full overflow-hidden p-1"
+	class="relative font-semibold text-lg md:text-2xl max-w-3xl break-keep h-full overflow-hidden p-1"
 >
 	<div class="flex flex-wrap transition-transform" style="transform: translateY(-{wordsOffset}px);">
 		{#each words as word, index}
@@ -27,7 +27,7 @@
 				<div
 					bind:this={wordElement}
 					class={twMerge(
-						'px-2 h-10 flex items-center rounded-md shadow-md -translate-y-1 transition-transform',
+						'px-2 h-8 md:h-10 flex items-center rounded-md shadow-md -translate-y-1 transition-transform',
 						highlightError ? 'bg-red-500' : 'highlight bg-gray-700'
 					)}
 				>
@@ -36,7 +36,7 @@
 			{:else}
 				<div
 					class={twMerge(
-						'px-2 h-10 flex items-center rounded-md transition-transform',
+						'px-2 h-8 md:h-10 flex items-center rounded-md transition-transform',
 						words[index].correct ? 'text-green-500' : words[index].correct != null && 'text-red-500'
 					)}
 				>

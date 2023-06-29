@@ -29,6 +29,12 @@
 		over: false
 	};
 
+	function handleResize(event: any) {
+		if (window !== undefined) {
+			window.scrollTo({ top: event.target.innerHeight });
+		}
+	}
+
 	function getNewWords() {
 		fetchingWords = true;
 		setTimeout(() => {
@@ -119,7 +125,11 @@
 	<meta name="description" content="Svelte app for typing practice" />
 </svelte:head>
 
-<section class="h-screen w-screen flex justify-center items-center bg-gray-900 text-gray-300">
+<svelte:window on:resize={handleResize} />
+
+<section
+	class="min-h-screen min-w-screen flex justify-center items-center bg-gray-900 text-gray-300"
+>
 	<div class="flex flex-col items-center px-4 font-medium">
 		{#if game.over}
 			<p class="text-2xl">Your results</p>
