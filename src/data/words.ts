@@ -1985,7 +1985,6 @@ export default [
 	'acoustic',
 	'acrid',
 	'actually',
-	'ad hoc',
 	'adamant',
 	'adaptable',
 	'addicted',
